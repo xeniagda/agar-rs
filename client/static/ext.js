@@ -29,3 +29,7 @@ export function rand() {
 export function atan2(y, x) {
     return Math.atan2(y, x);
 }
+
+export function ws_send(data) {
+    ws.send(data);
+}

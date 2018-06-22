@@ -14,3 +14,4 @@ lto = true
 lazy_static = "1"
 agar-backend = { path = "../agar-backend/" }
 wasm-bindgen = "0.2"
+serde_json = "1.0"

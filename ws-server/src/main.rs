@@ -23,7 +23,7 @@ use tungstenite::Message;
 use futures::{Future, Stream, Sink};
 use futures::sync::mpsc::unbounded;
 
-use agar_backend::{State, Player};
+use agar_backend::{State, Player, IdPlayerCommand};
 
 lazy_static! {
     static ref STATE: Arc<Mutex<State>> = Arc::new(Mutex::new(State::new()));
@@ -56,12 +56,25 @@ fn main() {
 
             let (mut sender, recv) = unbounded();
 
-            let mut pinger_sender = sender.clone();
-            let pinger = Interval::new(Instant::now(), Duration::from_secs(1))
+            let mut id = 0;
+            if let Ok(mut state) = STATE.lock() {
+                if let Ok(mut player_addr_id) = PLAYER_ADDR_ID.lock() {
+                    let highest_id = player_addr_id.iter().map(|(_, id)| *id).max().unwrap_or(0);
+                    id = highest_id + 1;
+                    player_addr_id.push((addr, id));
+                    state.players.insert(id, Player { pos: (0., 0.), direction: 0., speed: 5., size: 1. });
+
+                    sender.start_send(Message::Text(format!("{}", id)));
+
+                    println!("Added player {:?}", id);
+                }
+            }
+
+            let pinger = Interval::new(Instant::now() + Duration::from_secs(1), Duration::from_secs(1))
                     .for_each(move |_| {
                         if let Ok(state) = STATE.lock() {
-                            let json = serde_json::to_string(&*state).expect("Can't jsonise the state!");
-                            pinger_sender.start_send(Message::Text(json));
+                            let json = serde_json::to_string(&(&*state, id)).expect("Can't jsonise the state!");
+                            sender.start_send(Message::Text(json));
                         }
 
                         Ok(())
@@ -76,18 +89,23 @@ fn main() {
                 })
                 .map(|_| ());
 
-            tokio::spawn(pinger);
-            tokio::spawn(send);
+            let stream = stream
+                    .for_each(move |msg| {
+                        if let Message::Text(json) = msg {
+                            if let Ok(cmd) = serde_json::from_str::<IdPlayerCommand>(json.as_ref()) {
+                                if let Ok(mut state) = STATE.lock() {
+                                    state.do_command(cmd);
+                                }
+                            }
+                        }
+                        Ok(())
+                    })
+                    .map_err(|_| ());
 
-            if let Ok(mut state) = STATE.lock() {
-                if let Ok(mut player_addr_id) = PLAYER_ADDR_ID.lock() {
-                    let highest_id = player_addr_id.iter().map(|(_, id)| *id).max().unwrap_or(0);
-                    let new_id = highest_id + 1;
-                    player_addr_id.push((addr, new_id));
-                    state.players.insert(new_id, Player { pos: (0., 0.), direction: 0., speed: 5., size: 5. });
-                    sender.start_send(Message::Text(format!("{}", new_id)));
-                }
-            }
+            tokio::spawn(send);
+            tokio::spawn(stream);
+            tokio::spawn(pinger);
+
 
 
             Ok(())

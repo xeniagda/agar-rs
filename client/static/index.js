@@ -1,6 +1,7 @@
 const agar = import("./agar");
+const ext = import("./ext");
 
-
+ws = new WebSocket("ws://127.0.0.1:6969");
 
 function get_size() {
     var w = window.innerWidth;
@@ -24,7 +25,11 @@ ctx.font = "5px monospace";
 let amount = 0;
 
 agar.then(module => {
+        ws.onmessage = msg => {
+            module.recv_ws_message(msg.data);
+        }
         module.start(width, height);
+
         document.body.addEventListener("mousemove", event => {
             module.mouse_moved(event.x, event.y);
         });
@@ -45,5 +50,5 @@ agar.then(module => {
             }
         }, 50);
 
-        // Start websocket
     })
+

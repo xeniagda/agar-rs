@@ -3,10 +3,12 @@
 
 #[macro_use]
 extern crate lazy_static;
+extern crate agar_backend;
+extern crate serde_json;
+
 extern crate wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
-extern crate agar_backend;
 
 pub mod ext;
 
@@ -24,7 +26,6 @@ lazy_static! {
 
 #[wasm_bindgen]
 pub fn start(width: usize, height: usize) {
-    log("Hello!");
     if let Ok(mut size) = SIZE.lock() {
         *size = (width, height);
     }
@@ -62,18 +63,33 @@ pub fn mouse_moved(to_x: usize, to_y: usize) {
 
     let theta = atan2(dx, dy);
 
-
     if let Ok(mut state) = STATE.lock() {
         let cmd = IdPlayerCommand { id: state.1, command: PlayerCommand::SetDirectionAndSpeed(theta, 5.) };
+
+        ws_send(serde_json::to_string(&cmd).unwrap());
+
         log(&format!("Cmd: {:?}", cmd));
         state.0.do_command(cmd);
+
     }
+
 }
 
 
 #[wasm_bindgen]
 pub fn redraw() {
     draw();
+}
+
+#[wasm_bindgen]
+pub fn recv_ws_message(data: String) {
+    log(&format!("Received {:?}", data));
+    if let Ok(mut state) = STATE.lock() {
+        match serde_json::from_str::<(State, usize)>(&data) {
+            Ok(new_state) => { *state = new_state }
+            Err(e) => { log(&format!("Decoding error: {:?}", e)) }
+        }
+    }
 }
 
 fn draw() {
