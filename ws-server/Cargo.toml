@@ -1,0 +1,16 @@
+[package]
+name = "ws-server"
+version = "0.1.0"
+authors = ["loovjo <jonathan.loov@gmail.com>"]
+
+[dependencies]
+tokio-tungstenite = "0.5"
+tungstenite = "0.5"
+tokio = "0.1"
+futures = "0.1"
+
+lazy_static = "1.0"
+serde_json = "1.0"
+
+[dependencies.agar-backend]
+path = "../agar-backend/"
