@@ -46,7 +46,7 @@ impl State {
 
     pub fn tick(&mut self, dt: f64) {
         for (_id, player) in self.players.iter_mut() {
-            let speed = player.speed.max(5.) / player.size;
+            let speed = player.speed.max(20.) / player.size;
 
             let (dx, dy) = (speed * sin(player.direction), speed * cos(player.direction));
             player.pos.0 += dx * dt;

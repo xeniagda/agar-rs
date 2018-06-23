@@ -62,7 +62,7 @@ fn main() {
                     let highest_id = player_addr_id.iter().map(|(_, id)| *id).max().unwrap_or(0);
                     id = highest_id + 1;
                     player_addr_id.push((addr, id));
-                    state.players.insert(id, Player { pos: (0., 0.), direction: 0., speed: 5., size: 1. });
+                    state.players.insert(id, Player { pos: (0., 0.), direction: 0., speed: 20., size: 1. });
 
                     sender.start_send(Message::Text(format!("{}", id)));
 
@@ -93,8 +93,10 @@ fn main() {
                     .for_each(move |msg| {
                         if let Message::Text(json) = msg {
                             if let Ok(cmd) = serde_json::from_str::<IdPlayerCommand>(json.as_ref()) {
-                                if let Ok(mut state) = STATE.lock() {
-                                    state.do_command(cmd);
+                                if cmd.id == id {
+                                    if let Ok(mut state) = STATE.lock() {
+                                        state.do_command(cmd);
+                                    }
                                 }
                             }
                         }

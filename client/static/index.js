@@ -33,6 +33,10 @@ agar.then(module => {
         document.body.addEventListener("mousemove", event => {
             module.mouse_moved(event.x, event.y);
         });
+        document.body.addEventListener("wheel", event => {
+            module.scroll(event.deltaY);
+        });
+
         setInterval(module.tick, 1000 / 60);
         setInterval(module.redraw, 1000 * 10);
         setInterval(() => {

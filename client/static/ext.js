@@ -14,6 +14,16 @@ export function put_circle_3(x, y, r, fr, fg, fb) {
     ctx.fill();
 }
 
+export function put_line_3(x1, y1, x2, y2, r, fr, fg, fb) {
+    ctx.strokeStyle = `rgb(${fr & 255},${fg & 255},${fb & 255})`;
+    ctx.lineWidth = r;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.closePath();
+    ctx.stroke();
+}
+
 export function clear() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
