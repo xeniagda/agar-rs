@@ -65,8 +65,11 @@ pub fn mouse_moved(to_x: usize, to_y: usize) {
 
     let theta = atan2(dx, dy);
 
+    let (dx_norm, dy_norm) = (dx / size.0 as f64 * 2., dy / size.1 as f64 * 2.);
+    let r_sq = (dx_norm * dx_norm + dy_norm * dy_norm).sqrt() * 6.;
+
     if let Ok(mut state) = STATE.lock() {
-        let cmd = IdPlayerCommand { id: state.1, command: PlayerCommand::SetDirectionAndSpeed(theta, 5.) };
+        let cmd = IdPlayerCommand { id: state.1, command: PlayerCommand::SetDirectionAndSpeed(theta, r_sq) };
 
         ws_send(serde_json::to_string(&cmd).unwrap());
 
@@ -86,7 +89,7 @@ pub fn redraw() {
 #[wasm_bindgen]
 pub fn scroll(y: f64) {
     if let Ok(mut scale) = SCALE.lock() {
-        *scale = (*scale - y / 20.).max(3.).min(50.);
+        *scale = (*scale - y / 20.).max(2.).min(100.);
     }
 }
 

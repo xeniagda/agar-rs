@@ -67,11 +67,11 @@ impl State {
 
     pub fn tick(&mut self, dt: f64) {
         for (_id, player) in self.players.iter_mut() {
-            let speed = player.speed.max(20.) / player.size;
+            let speed = player.speed / (player.size + 5.);
 
             let (dx, dy) = (speed * sin(player.direction), speed * cos(player.direction));
-            player.pos.0 += dx * dt;
-            player.pos.1 += dy * dt;
+            player.pos.0 += dx * dt * 35.;
+            player.pos.1 += dy * dt * 35.;
 
             if player.pos.0 < player.size {
                 player.pos.0 = player.size;
@@ -89,7 +89,7 @@ impl State {
             self.balls.retain(|ball| {
                         let (dx, dy) = (ball.pos.0 - player.pos.0, ball.pos.1 - player.pos.1);
                         let dist = (dx * dx + dy * dy).sqrt();
-                        if dist < player.size {
+                        if dist < player.size - 1 {
                             player.size += 1.;
                             false
                         } else {
@@ -163,7 +163,7 @@ impl State {
             pos: ( rng.gen_range(0., self.size.0), rng.gen_range(0., self.size.1) ),
             direction: 0.,
             speed: 0.,
-            size: 1.
+            size: 2.
         };
 
         self.players.insert(id, player);
@@ -175,7 +175,7 @@ impl State {
             match command.command {
                 PlayerCommand::SetDirectionAndSpeed(dir, speed) => {
                     player.direction = dir;
-                    player.speed = speed;
+                    player.speed = speed.max(1.);
                 }
             }
         }
