@@ -23,7 +23,7 @@ use tungstenite::Message;
 use futures::{Future, Stream, Sink};
 use futures::sync::mpsc::unbounded;
 
-use agar_backend::{State, Player, IdPlayerCommand};
+use agar_backend::{State, IdPlayerCommand};
 
 lazy_static! {
     static ref STATE: Arc<Mutex<State>> = Arc::new(Mutex::new(State::new()));
@@ -62,7 +62,7 @@ fn main() {
                     let highest_id = player_addr_id.iter().map(|(_, id)| *id).max().unwrap_or(0);
                     id = highest_id + 1;
                     player_addr_id.push((addr, id));
-                    state.players.insert(id, Player { pos: (0., 0.), direction: 0., speed: 20., size: 1. });
+                    state.add_player(id);
 
                     sender.start_send(Message::Text(format!("{}", id)));
 
@@ -120,7 +120,7 @@ fn main() {
 }
 
 fn run_state_manager() {
-    let state_manager = Interval::new(Instant::now(), Duration::from_millis(20))
+    let state_manager = Interval::new(Instant::now(), Duration::from_millis(75))
             .fold(None, |last, now| {
                 match last {
                     None => Ok(Some(now)),

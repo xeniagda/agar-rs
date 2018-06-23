@@ -150,5 +150,14 @@ fn draw() {
             );
         }
 
+        for ball in &state.0.balls {
+            put_circle(
+                ((ball.pos.0 - my_pos.0) * scale + size.0 as f64 / 2.,
+                 (ball.pos.1 - my_pos.1) * scale + size.1 as f64 / 2.),
+                scale,
+                (0, 255, 0)
+            );
+        }
+
     }
 }
