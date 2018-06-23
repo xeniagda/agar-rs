@@ -119,7 +119,7 @@ fn draw() {
         // Grid lines
         let x_scroll = (my_pos.0 / LINE_SPACE - ((my_pos.0 / LINE_SPACE) as i64) as f64) * LINE_SPACE;
         let lines = (size.0 as f64 / (scale * LINE_SPACE)) as i64 + 2;
-        for x in -lines / 2..lines / 2 {
+        for x in -lines / 2..lines / 2 + 1 {
             let x = x as f64;
             put_line(
                 (x * scale * LINE_SPACE - x_scroll * scale + size.0 as f64 / 2., 0.),
@@ -130,7 +130,7 @@ fn draw() {
         }
         let y_scroll = (my_pos.1 / LINE_SPACE - ((my_pos.1 / LINE_SPACE) as i64) as f64) * LINE_SPACE;
         let lines = (size.1 as f64 / (scale * LINE_SPACE)) as i64 + 2;
-        for y in -lines / 2..lines / 2 {
+        for y in -lines / 2..lines / 2 + 1 {
             let y = y as f64;
             put_line(
                 (           0., y * scale * LINE_SPACE - y_scroll * scale + size.1 as f64 / 2.),
@@ -140,6 +140,14 @@ fn draw() {
             );
         }
 
+        for ball in &state.0.balls {
+            put_circle(
+                ((ball.pos.0 - my_pos.0) * scale + size.0 as f64 / 2.,
+                 (ball.pos.1 - my_pos.1) * scale + size.1 as f64 / 2.),
+                scale,
+                ball.color
+            );
+        }
 
         for (_, player) in &state.0.players {
             put_circle(
@@ -149,15 +157,5 @@ fn draw() {
                 (255, 0, 255)
             );
         }
-
-        for ball in &state.0.balls {
-            put_circle(
-                ((ball.pos.0 - my_pos.0) * scale + size.0 as f64 / 2.,
-                 (ball.pos.1 - my_pos.1) * scale + size.1 as f64 / 2.),
-                scale,
-                (0, 255, 0)
-            );
-        }
-
     }
 }

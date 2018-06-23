@@ -10,7 +10,8 @@ extern crate rand;
 mod math;
 use math::*;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::mem;
 
 #[cfg(feature = "server-side")]
 const BALL_PROB_PER_SEC: f64 = 0.1;
@@ -30,7 +31,7 @@ pub struct Ball {
 }
 
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Player {
     pub pos: (f64, f64),
     pub direction: f64, // Radians
@@ -60,7 +61,7 @@ impl State {
         State {
             players: HashMap::new(),
             balls: vec![],
-            size: (30., 30.),
+            size: (300., 300.),
         }
     }
 
@@ -72,17 +73,17 @@ impl State {
             player.pos.0 += dx * dt;
             player.pos.1 += dy * dt;
 
-            if player.pos.0 < 0. {
-                player.pos.0 = 0.;
+            if player.pos.0 < player.size {
+                player.pos.0 = player.size;
             }
-            if player.pos.1 < 0. {
-                player.pos.1 = 0.;
+            if player.pos.1 < player.size {
+                player.pos.1 = player.size;
             }
-            if player.pos.0 > self.size.0 {
-                player.pos.0 = self.size.0;
+            if player.pos.0 > self.size.0 - player.size {
+                player.pos.0 = self.size.0 - player.size;
             }
-            if player.pos.1 > self.size.1 {
-                player.pos.1 = self.size.1;
+            if player.pos.1 > self.size.1 - player.size {
+                player.pos.1 = self.size.1 - player.size;
             }
 
             self.balls.retain(|ball| {
@@ -96,6 +97,37 @@ impl State {
                         }
                     });
         }
+
+        let old_players = mem::replace(&mut self.players, HashMap::new());
+
+        let mut eaten_ids = HashSet::new();
+        let mut size_adds: HashMap<usize, f64> = HashMap::new();
+        for (id, player) in &old_players {
+
+            for (oid, other) in &old_players {
+                if oid == id { continue }
+                if other.size >= player.size { continue }
+
+                let (dx, dy) = (other.pos.0 - player.pos.0, other.pos.1 - player.pos.1);
+                let dist = (dx * dx + dy * dy).sqrt();
+                if dist < player.size {
+                    eaten_ids.insert(*oid);
+
+                    let old_size = size_adds.get(id).unwrap_or(&0.).clone();
+
+                    size_adds.insert(*id, old_size + other.size);
+                }
+            }
+        }
+
+        for (id, mut player) in old_players {
+            player.size += *size_adds.get(&id).unwrap_or(&0.);
+
+            if !eaten_ids.contains(&id) {
+                self.players.insert(id, player);
+            }
+        }
+
         #[cfg(feature = "server-side")]
         self.do_server_side_stuff(dt);
     }
@@ -115,7 +147,7 @@ impl State {
             // Add ball
             self.balls.push(
                 Ball {
-                    pos: ( rng.gen_range(0., self.size.0), rng.gen_range(0., self.size.1) ),
+                    pos: ( rng.gen_range(1., self.size.0 - 1.), rng.gen_range(1., self.size.1 - 1.) ),
                     color: rng.gen::<(u8, u8, u8)>()
                 });
         }

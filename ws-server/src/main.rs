@@ -70,7 +70,7 @@ fn main() {
                 }
             }
 
-            let pinger = Interval::new(Instant::now() + Duration::from_secs(1), Duration::from_secs(1))
+            let pinger = Interval::new(Instant::now(), Duration::from_millis(100))
                     .for_each(move |_| {
                         if let Ok(state) = STATE.lock() {
                             let json = serde_json::to_string(&(&*state, id)).expect("Can't jsonise the state!");
