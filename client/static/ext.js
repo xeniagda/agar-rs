@@ -8,10 +8,12 @@ export function put_char_3(x, y, ch, fr, fg, fb) {
 
 export function put_circle_3(x, y, r, fr, fg, fb) {
     ctx.fillStyle = `rgb(${fr & 255},${fg & 255},${fb & 255})`;
+    ctx.strokeStyle = `rgb(0, 0, 0)`;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.fill();
+    ctx.stroke();
 }
 
 export function put_line_3(x1, y1, x2, y2, r, fr, fg, fb) {

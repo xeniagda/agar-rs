@@ -16,6 +16,7 @@ use std::mem;
 #[cfg(feature = "server-side")]
 const BALL_PROB_PER_SEC: f64 = 0.1;
 
+const GROW_SPEED: f64 = 4.;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct State {
@@ -37,6 +38,7 @@ pub struct Player {
     pub direction: f64, // Radians
     pub speed: f64,
     pub size: f64,
+    pub show_size: f64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -67,29 +69,32 @@ impl State {
 
     pub fn tick(&mut self, dt: f64) {
         for (_id, player) in self.players.iter_mut() {
+
+            player.show_size = (player.show_size - player.size) * (1. / GROW_SPEED).powf(dt) + player.size;
+
             let speed = player.speed / (player.size + 5.);
 
             let (dx, dy) = (speed * sin(player.direction), speed * cos(player.direction));
             player.pos.0 += dx * dt * 35.;
             player.pos.1 += dy * dt * 35.;
 
-            if player.pos.0 < player.size {
-                player.pos.0 = player.size;
+            if player.pos.0 < player.show_size {
+                player.pos.0 = player.show_size;
             }
-            if player.pos.1 < player.size {
-                player.pos.1 = player.size;
+            if player.pos.1 < player.show_size {
+                player.pos.1 = player.show_size;
             }
-            if player.pos.0 > self.size.0 - player.size {
-                player.pos.0 = self.size.0 - player.size;
+            if player.pos.0 > self.size.0 - player.show_size {
+                player.pos.0 = self.size.0 - player.show_size;
             }
-            if player.pos.1 > self.size.1 - player.size {
-                player.pos.1 = self.size.1 - player.size;
+            if player.pos.1 > self.size.1 - player.show_size {
+                player.pos.1 = self.size.1 - player.show_size;
             }
 
             self.balls.retain(|ball| {
                         let (dx, dy) = (ball.pos.0 - player.pos.0, ball.pos.1 - player.pos.1);
                         let dist = (dx * dx + dy * dy).sqrt();
-                        if dist < player.size - 1 {
+                        if dist < player.size - 1. {
                             player.size += 1.;
                             false
                         } else {
@@ -163,7 +168,8 @@ impl State {
             pos: ( rng.gen_range(0., self.size.0), rng.gen_range(0., self.size.1) ),
             direction: 0.,
             speed: 0.,
-            size: 2.
+            size: 2.,
+            show_size: 2.,
         };
 
         self.players.insert(id, player);

@@ -5,6 +5,7 @@
 extern crate lazy_static;
 extern crate agar_backend;
 extern crate serde_json;
+extern crate itertools;
 
 extern crate wasm_bindgen;
 use wasm_bindgen::prelude::*;
@@ -13,8 +14,11 @@ use wasm_bindgen::prelude::*;
 pub mod ext;
 
 use std::sync::Mutex;
-use agar_backend::{State, Player, IdPlayerCommand, PlayerCommand};
+use std::cmp::Ordering;
+
+use agar_backend::{State, IdPlayerCommand, PlayerCommand};
 use ext::*;
+use itertools::Itertools;
 
 const LINE_SPACE: f64 = 5.;
 
@@ -30,9 +34,6 @@ lazy_static! {
 pub fn start(width: usize, height: usize) {
     if let Ok(mut size) = SIZE.lock() {
         *size = (width, height);
-    }
-    if let Ok(mut state) = STATE.lock() {
-        state.0.players.insert(0, Player { pos: (30., 30.), direction: 1., speed: 3., size: 1. });
     }
 
     draw();
@@ -61,7 +62,6 @@ pub fn mouse_moved(to_x: usize, to_y: usize) {
     let size = size.unwrap();
 
     let (dx, dy) = (to_x as f64 - size.0 as f64 / 2., to_y as f64 - size.1 as f64 / 2.);
-    log(&format!("dx = {}, dy = {}", dx, dy));
 
     let theta = atan2(dx, dy);
 
@@ -73,7 +73,6 @@ pub fn mouse_moved(to_x: usize, to_y: usize) {
 
         ws_send(serde_json::to_string(&cmd).unwrap());
 
-        log(&format!("Cmd: {:?}", cmd));
         state.0.do_command(cmd);
 
     }
@@ -95,7 +94,6 @@ pub fn scroll(y: f64) {
 
 #[wasm_bindgen]
 pub fn recv_ws_message(data: String) {
-    log(&format!("Received {:?}", data));
     if let Ok(mut state) = STATE.lock() {
         match serde_json::from_str::<(State, usize)>(&data) {
             Ok(new_state) => { *state = new_state }
@@ -152,11 +150,13 @@ fn draw() {
             );
         }
 
-        for (_, player) in &state.0.players {
+        let sorted_players = &state.0.players.values()
+                .sorted_by(|x, y| PartialOrd::partial_cmp(&x.size, &y.size).unwrap_or(Ordering::Less));
+        for player in sorted_players {
             put_circle(
                 ((player.pos.0 - my_pos.0) * scale + size.0 as f64 / 2.,
                  (player.pos.1 - my_pos.1) * scale + size.1 as f64 / 2.),
-                player.size * scale,
+                player.show_size * scale,
                 (255, 0, 255)
             );
         }

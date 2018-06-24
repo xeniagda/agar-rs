@@ -5,7 +5,7 @@ ws = new WebSocket("ws://127.0.0.1:6969");
 
 function get_size() {
     var w = window.innerWidth;
-    var h = window.innerHeight - 20;
+    var h = window.innerHeight;
 
     return [w, h];
 }
