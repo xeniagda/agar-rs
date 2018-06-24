@@ -17,6 +17,7 @@ use std::mem;
 const BALL_PROB_PER_SEC: f64 = 0.1;
 
 const GROW_SPEED: f64 = 4.;
+const SIZE_RATIO_TO_EAT: f64 = 1.2;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct State {
@@ -111,16 +112,16 @@ impl State {
 
             for (oid, other) in &old_players {
                 if oid == id { continue }
-                if other.size >= player.size { continue }
+                if other.size < player.size / SIZE_RATIO_TO_EAT {
+                    let (dx, dy) = (other.pos.0 - player.pos.0, other.pos.1 - player.pos.1);
+                    let dist = (dx * dx + dy * dy).sqrt();
+                    if dist < player.size {
+                        eaten_ids.insert(*oid);
 
-                let (dx, dy) = (other.pos.0 - player.pos.0, other.pos.1 - player.pos.1);
-                let dist = (dx * dx + dy * dy).sqrt();
-                if dist < player.size {
-                    eaten_ids.insert(*oid);
+                        let old_size = size_adds.get(id).unwrap_or(&0.).clone();
 
-                    let old_size = size_adds.get(id).unwrap_or(&0.).clone();
-
-                    size_adds.insert(*id, old_size + other.size);
+                        size_adds.insert(*id, old_size + other.size);
+                    }
                 }
             }
         }
