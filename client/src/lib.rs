@@ -25,7 +25,7 @@ const LINE_SPACE: f64 = 5.;
 lazy_static! {
     static ref SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));
     static ref STATE: Mutex<(State, usize)> = Mutex::new((State::new(), 0)); // State, client_id
-    static ref SCALE: Mutex<f64> = Mutex::new(10.);
+    static ref SCALE: Mutex<f64> = Mutex::new(1.);
 
     //static ref LAST_TICK: Mutex<Option<Instant>> = Mutex::new(None);
 }
@@ -88,7 +88,7 @@ pub fn redraw() {
 #[wasm_bindgen]
 pub fn scroll(y: f64) {
     if let Ok(mut scale) = SCALE.lock() {
-        *scale = (*scale - y / 20.).max(2.).min(100.);
+        *scale = (*scale - y / 20.).max(0.4).min(3.);
     }
 }
 
@@ -109,13 +109,16 @@ fn draw() {
     if size.is_err() { return; }
     let size = size.unwrap();
 
-    let scale = SCALE.lock();
-    if scale.is_err() { return; }
-    let scale = *scale.unwrap();
+    let scale_mul = SCALE.lock();
+    if scale_mul.is_err() { return; }
+    let scale_mul = *scale_mul.unwrap();
 
 
     if let Ok(state) = STATE.lock() {
         let my_pos = state.0.players.get(&state.1).map(|x| x.pos).unwrap_or((0., 0.));
+        let my_size = state.0.players.get(&state.1).map(|x| x.show_size).unwrap_or(10.);
+
+        let scale = scale_mul / (my_size.sqrt() + 2.) * 30.;
 
         // Grid lines
         let x_scroll = (my_pos.0 / LINE_SPACE - ((my_pos.0 / LINE_SPACE) as i64) as f64) * LINE_SPACE;
