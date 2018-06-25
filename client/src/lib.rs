@@ -118,7 +118,7 @@ fn draw() {
         let my_pos = state.0.players.get(&state.1).map(|x| x.pos).unwrap_or((0., 0.));
         let my_size = state.0.players.get(&state.1).map(|x| x.show_size).unwrap_or(10.);
 
-        let zoom = zoom_mul / (my_size.sqrt() + 2.) * 30.;
+        let zoom = 0.015 * zoom_mul / (my_size.sqrt() + 2.) * (size.0 + size.1) as f64;
 
         // Grid lines
         let x_scroll = (my_pos.0 / LINE_SPACE - ((my_pos.0 / LINE_SPACE) as i64) as f64) * LINE_SPACE;
