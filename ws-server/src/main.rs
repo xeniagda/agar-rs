@@ -6,7 +6,13 @@ extern crate tungstenite;
 extern crate tokio;
 extern crate futures;
 extern crate agar_backend;
-extern crate serde_json;
+
+#[cfg(feature = "serde_cbor")]
+extern crate serde_cbor as serde_impl;
+
+#[cfg(feature = "serde_json")]
+extern crate serde_json as serde_impl;
+
 
 
 use std::net::{SocketAddr, IpAddr};
@@ -77,8 +83,6 @@ fn main() {
                     player_addr_id.push((addr, id));
                     state.add_player(id);
 
-                    sender.start_send(Message::Text(format!("{}", id)));
-
                     println!("Added player {:?}", id);
                 }
             }
@@ -86,8 +90,8 @@ fn main() {
             let pinger = Interval::new(Instant::now(), Duration::from_millis(100))
                     .for_each(move |_| {
                         if let Ok(state) = STATE.lock() {
-                            let json = serde_json::to_string(&(&*state, id)).expect("Can't jsonise the state!");
-                            sender.start_send(Message::Text(json));
+                            let json = serde_impl::to_vec(&(&*state, id)).expect("Can't jsonise the state!");
+                            sender.start_send(Message::Binary(json));
                         }
 
                         Ok(())
@@ -104,8 +108,8 @@ fn main() {
 
             let stream = stream
                     .for_each(move |msg| {
-                        if let Message::Text(json) = msg {
-                            if let Ok(cmd) = serde_json::from_str::<IdPlayerCommand>(json.as_ref()) {
+                        if let Message::Binary(json) = msg {
+                            if let Ok(cmd) = serde_impl::from_slice::<IdPlayerCommand>(&json) {
                                 if cmd.id == id {
                                     if let Ok(mut state) = STATE.lock() {
                                         state.do_command(cmd);

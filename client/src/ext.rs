@@ -9,7 +9,7 @@ pub extern {
     pub fn log(text: &str);
     pub fn rand() -> f64;
     pub fn atan2(y: f64, x: f64) -> f64;
-    pub fn ws_send(msg: String);
+    pub fn ws_send(msg: Vec<u8>);
 }
 
 pub fn put_char(pos: (f64, f64), ch: usize, col: (u8, u8, u8)) {

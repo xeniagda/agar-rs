@@ -1,7 +1,6 @@
 const agar = import("./agar");
 const ext = import("./ext");
 
-ws = new WebSocket("ws://" + window.location.hostname + ":6969");
 
 function get_size() {
     var w = window.innerWidth;
@@ -25,8 +24,11 @@ ctx.font = "5px monospace";
 let amount = 0;
 
 agar.then(module => {
+        ws = new WebSocket("ws://" + window.location.hostname + ":6969");
+        ws.binaryType = "arraybuffer";
+
         ws.onmessage = msg => {
-            module.recv_ws_message(msg.data);
+            module.recv_ws_message(Array.from(new Uint8Array(msg.data)));
         }
         module.start(width, height);
 

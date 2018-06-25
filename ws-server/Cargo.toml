@@ -10,8 +10,15 @@ tokio = "0.1"
 futures = "0.1"
 
 lazy_static = "1.0"
-serde_json = "1.0"
+
+serde_json = { version = "1.0", optional = true }
+serde_cbor = { version = "0.8", optional = true }
 
 [dependencies.agar-backend]
 path = "../agar-backend/"
 features = ["server-side"]
+
+
+[features]
+default = ["serde_cbor"]
+

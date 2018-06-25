@@ -58,5 +58,5 @@ export function atan2(y, x) {
 }
 
 export function ws_send(data) {
-    ws.send(data);
+    ws.send(new Uint8Array(data).buffer);
 }

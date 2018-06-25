@@ -4,10 +4,16 @@
 #[macro_use]
 extern crate lazy_static;
 extern crate agar_backend;
-extern crate serde_json;
 extern crate itertools;
 
 extern crate wasm_bindgen;
+
+#[cfg(feature = "serde_cbor")]
+extern crate serde_cbor as serde_impl;
+
+#[cfg(feature = "serde_json")]
+extern crate serde_json as serde_impl;
+
 use wasm_bindgen::prelude::*;
 
 
@@ -71,7 +77,7 @@ pub fn mouse_moved(to_x: usize, to_y: usize) {
     if let Ok(mut state) = STATE.lock() {
         let cmd = IdPlayerCommand { id: state.1, command: PlayerCommand::SetDirectionAndSpeed(theta, r_sq) };
 
-        ws_send(serde_json::to_string(&cmd).unwrap());
+        ws_send(serde_impl::to_vec(&cmd).unwrap());
 
         state.0.do_command(cmd);
 
@@ -93,9 +99,9 @@ pub fn scroll(y: f64) {
 }
 
 #[wasm_bindgen]
-pub fn recv_ws_message(data: String) {
+pub fn recv_ws_message(data: Vec<u8>) {
     if let Ok(mut state) = STATE.lock() {
-        match serde_json::from_str::<(State, usize)>(&data) {
+        match serde_impl::from_slice::<(State, usize)>(&data) {
             Ok(new_state) => { *state = new_state }
             Err(e) => { log(&format!("Decoding error: {:?}", e)) }
         }
