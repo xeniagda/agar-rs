@@ -27,11 +27,12 @@ use ext::*;
 use itertools::Itertools;
 
 const LINE_SPACE: f64 = 5.;
+const ZOOM_SPEED: f64 = 20.;
 
 lazy_static! {
     static ref SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));
     static ref STATE: Mutex<(State, usize)> = Mutex::new((State::new(), 0)); // State, client_id
-    static ref ZOOM: Mutex<f64> = Mutex::new(1.);
+    static ref ZOOM: Mutex<(f64, f64)> = Mutex::new((1., 1.)); // (wanted, current)
 
     //static ref LAST_TICK: Mutex<Option<Instant>> = Mutex::new(None);
 }
@@ -47,9 +48,15 @@ pub fn start(width: usize, height: usize) {
 
 #[wasm_bindgen]
 pub fn tick() {
+    let dt = 1. / 60.;
+
     draw();
     if let Ok(mut state) = STATE.lock() {
-        state.0.tick(1. / 60.);
+        state.0.tick(dt);
+    }
+
+    if let Ok(mut zoom) = ZOOM.lock() {
+        zoom.1 = (zoom.1 - zoom.0) * (1. / ZOOM_SPEED).powf(dt) + zoom.0;
     }
 }
 
@@ -94,7 +101,7 @@ pub fn redraw() {
 #[wasm_bindgen]
 pub fn scroll(y: f64) {
     if let Ok(mut zoom) = ZOOM.lock() {
-        *zoom = (*zoom - y / 20.).max(0.4).min(3.);
+        zoom.0 = (zoom.0 - y / 20.).max(0.4).min(3.);
     }
 }
 
@@ -117,7 +124,7 @@ fn draw() {
 
     let zoom_mul = ZOOM.lock();
     if zoom_mul.is_err() { return; }
-    let zoom_mul = *zoom_mul.unwrap();
+    let zoom_mul = zoom_mul.unwrap().1;
 
 
     if let Ok(state) = STATE.lock() {
