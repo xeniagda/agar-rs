@@ -127,7 +127,15 @@ impl State {
         }
 
         for (id, mut player) in old_players {
-            player.size += *size_adds.get(&id).unwrap_or(&0.);
+            // Area addition:
+            //     r1 = player radius, r2 = other radius, r3 = resulting radius
+            // a1 = pi * r1 ^ 2
+            // a2 = pi * r2 ^ 2
+            // a3 = a1 + a2 = pi * (r1 ^ 2 + r2 ^ 2)
+            // a3 = pi * r3 ^ 2
+            // r3 ^ 2 = r1 ^ 2 + r2 ^ 2
+            // r3 = sqrt(r1 ^ 2 + r2 ^ 2)
+            player.size = (player.size * player.size + size_adds.get(&id).map(|s| s * s).unwrap_or(0.)).sqrt();
 
             if !eaten_ids.contains(&id) {
                 self.players.insert(id, player);
