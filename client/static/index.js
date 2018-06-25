@@ -33,6 +33,16 @@ agar.then(module => {
         document.body.addEventListener("mousemove", event => {
             module.mouse_moved(event.x, event.y);
         });
+
+        document.body.addEventListener("touchmove", event => {
+            window.scrollTo(0, 0);
+            event.preventDefault();
+
+            let touch = event.touches[0];
+
+            module.mouse_moved(touch.clientX, touch.clientY);
+        });
+
         document.body.addEventListener("wheel", event => {
             module.scroll(event.deltaY);
         });
