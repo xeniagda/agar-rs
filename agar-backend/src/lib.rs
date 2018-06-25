@@ -14,7 +14,7 @@ use std::collections::{HashMap, HashSet};
 use std::mem;
 
 #[cfg(feature = "server-side")]
-const BALL_PROB_PER_SEC: f64 = 0.1;
+const BALL_PROB_PER_SEC: f64 = 0.7;
 
 const GROW_SPEED: f64 = 4.;
 const SIZE_RATIO_TO_EAT: f64 = 1.2;
@@ -96,7 +96,7 @@ impl State {
                         let (dx, dy) = (ball.pos.0 - player.pos.0, ball.pos.1 - player.pos.1);
                         let dist = (dx * dx + dy * dy).sqrt();
                         if dist < player.size - 1. {
-                            player.size += 1.;
+                            player.size = ((player.size + 0.1).powi(2) + 3.).sqrt();
                             false
                         } else {
                             true
@@ -177,8 +177,8 @@ impl State {
             pos: ( rng.gen_range(0., self.size.0), rng.gen_range(0., self.size.1) ),
             direction: 0.,
             speed: 0.,
-            size: 2.,
-            show_size: 2.,
+            size: 3.,
+            show_size: 0.,
         };
 
         self.players.insert(id, player);
