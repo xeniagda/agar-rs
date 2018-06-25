@@ -14,7 +14,7 @@ use std::collections::{HashMap, HashSet};
 use std::mem;
 
 #[cfg(feature = "server-side")]
-const BALL_PROB_PER_SEC: f64 = 0.7;
+const BALL_PROB_PER_SEC: f64 = 0.3;
 
 const GROW_SPEED: f64 = 4.;
 const SIZE_RATIO_TO_EAT: f64 = 1.2;
