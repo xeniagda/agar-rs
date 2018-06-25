@@ -104,8 +104,53 @@ impl State {
                     });
         }
 
-        let old_players = mem::replace(&mut self.players, HashMap::new());
+        let mut old_players = mem::replace(&mut self.players, HashMap::new());
 
+        // Suck in other players
+        let mut succ: HashMap<usize, (f64, (f64, f64))> = HashMap::new(); // Id: (amount, to)
+
+        for (id, player) in &old_players {
+            for (oid, other) in &old_players {
+                if oid == id { continue }
+
+                if other.size < player.size / SIZE_RATIO_TO_EAT {
+                    let (dx, dy) = (other.pos.0 - player.pos.0, other.pos.1 - player.pos.1);
+                    let dist = (dx * dx + dy * dy).sqrt();
+                    if dist < player.size + other.size {
+                        // ps = player.size, os = other.size
+                        // ms = ps - os (Min succ, the lowest possible distance to not get eaten)
+                        // Ms = ps + os (Max succ, the highest distance for the succ to have effect)
+                        //
+                        // We want to map ms to 1, Ms to 0 linearly.
+                        // s = f(d) = k*d + m
+                        // f(ms) = 1
+                        // f(Ms) = 0
+                        // k = Δs/Δd = 1/(ms-Ms)
+                        // f(Ms) = k * Ms + m = 0
+                        // Ms/(ms-Ms) + m = 1
+                        // m = -Ms/(ms-Ms)
+                        // f(d) = d / (ms-Ms) - Ms/(ms-Ms)
+                        //      = d / (-2os) + ps / (2os) + 1/2
+
+                        let succ_amount = dist / (-2. * other.size) + player.size / (2. * other.size) + 0.5;
+                        println!("Succ amount: {}", succ_amount);
+
+                        succ.insert(*oid, (succ_amount, player.pos));
+                    }
+                }
+            }
+        }
+
+        for (id, (amount, to)) in succ {
+            if let Some(mut player) = old_players.get_mut(&id) {
+                let (dx, dy) = (to.0 - player.pos.0, to.1 - player.pos.1);
+                player.pos.0 += dx * dt * amount * 3.;
+                player.pos.1 += dy * dt * amount * 3.;
+            }
+        }
+
+
+        // Eat players
         let mut eaten_ids = HashSet::new();
         let mut size_adds: HashMap<usize, f64> = HashMap::new();
         for (id, player) in &old_players {
@@ -115,7 +160,7 @@ impl State {
                 if other.size < player.size / SIZE_RATIO_TO_EAT {
                     let (dx, dy) = (other.pos.0 - player.pos.0, other.pos.1 - player.pos.1);
                     let dist = (dx * dx + dy * dy).sqrt();
-                    if dist < player.size {
+                    if dist < player.size - other.size {
                         eaten_ids.insert(*oid);
 
                         let old_size = size_adds.get(id).unwrap_or(&0.).clone();
