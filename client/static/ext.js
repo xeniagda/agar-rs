@@ -1,12 +1,27 @@
 let canvas = document.getElementById("draw");
 let ctx = canvas.getContext("2d");
 
+function get_size() {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+
+    return [w, h];
+}
+
 export function put_char_3(x, y, ch, fr, fg, fb) {
     ctx.fillStyle = `rgb(${fr & 255},${fg & 255},${fb & 255})`;
     ctx.fillText(String.fromCharCode(ch), x, y);
 }
 
 export function put_circle_3(x, y, r, fr, fg, fb) {
+    if (x + r < 0 ||
+        y + r < 0 ||
+        x - r > get_size()[0] ||
+        y - r > get_size()[1] )
+    {
+        return;
+    }
+
     ctx.fillStyle = `rgb(${fr & 255},${fg & 255},${fb & 255})`;
     ctx.strokeStyle = `rgb(0, 0, 0)`;
     ctx.beginPath();

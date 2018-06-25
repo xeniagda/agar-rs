@@ -40,7 +40,9 @@ agar.then(module => {
 
             let touch = event.touches[0];
 
-            module.mouse_moved(touch.clientX, touch.clientY);
+            if (!isNaN(touch.clientX) && !isNaN(touch.clientY)) {
+                module.mouse_moved(touch.clientX, touch.clientY);
+            }
         });
 
         document.body.addEventListener("wheel", event => {
