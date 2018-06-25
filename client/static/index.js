@@ -1,7 +1,7 @@
 const agar = import("./agar");
 const ext = import("./ext");
 
-ws = new WebSocket("ws://127.0.0.1:6969");
+ws = new WebSocket("ws://" + window.location.hostname + ":6969");
 
 function get_size() {
     var w = window.innerWidth;

@@ -9,10 +9,11 @@ extern crate agar_backend;
 extern crate serde_json;
 
 
-use std::net::SocketAddr;
+use std::net::{SocketAddr, IpAddr};
 use std::sync::{Arc, Mutex};
 use std::time::{Instant, Duration};
 use std::io::{Error, ErrorKind};
+use std::env::args;
 use std::thread;
 
 use tokio::net::TcpListener;
@@ -31,7 +32,19 @@ lazy_static! {
 }
 
 fn main() {
-    let addr: SocketAddr = ([127, 0, 0, 1], 6969).into();
+    let mut args = args();
+
+    let mut addr: SocketAddr = ([127, 0, 0, 1], 8080).into();
+    if let Some(arg) = args.nth(1) {
+        if let Ok(x) = arg.parse::<SocketAddr>() {
+            addr = x;
+        }
+        if let Ok(x) = arg.parse::<IpAddr>() {
+            addr = SocketAddr::new(x, 6969);
+        }
+    }
+
+    eprintln!("Starting WebSocket server on {}", addr);
 
     let server = TcpListener::bind(&addr).expect("Can't make server");
 
