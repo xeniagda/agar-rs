@@ -133,7 +133,6 @@ impl State {
                         //      = d / (-2os) + ps / (2os) + 1/2
 
                         let succ_amount = dist / (-2. * other.size) + player.size / (2. * other.size) + 0.5;
-                        println!("Succ amount: {}", succ_amount);
 
                         succ.insert(*oid, (succ_amount, player.pos));
                     }
