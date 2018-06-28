@@ -74,6 +74,9 @@ pub fn mouse_moved(to_x: usize, to_y: usize) {
     if size.is_err() { return; }
     let size = size.unwrap();
 
+    let to_x = to_x.min(size.0).max(0);
+    let to_y = to_y.min(size.1).max(0);
+
     let (dx, dy) = (to_x as f64 - size.0 as f64 / 2., to_y as f64 - size.1 as f64 / 2.);
 
     let theta = atan2(dx, dy);
