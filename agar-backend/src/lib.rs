@@ -29,7 +29,7 @@ pub struct State {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Ball {
     pub pos: (f64, f64),
-    pub color: (u8, u8, u8)
+    pub color: (u8, u8, u8),
 }
 
 
@@ -40,6 +40,7 @@ pub struct Player {
     pub speed: f64,
     pub size: f64,
     pub show_size: f64,
+    pub color: (u8, u8, u8),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -223,6 +224,7 @@ impl State {
             speed: 0.,
             size: 3.,
             show_size: 0.,
+            color: rng.gen::<(u8, u8, u8)>()
         };
 
         self.players.insert(id, player);

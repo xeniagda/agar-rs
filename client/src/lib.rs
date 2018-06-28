@@ -173,7 +173,7 @@ fn draw() {
                 ((player.pos.0 - my_pos.0) * zoom + size.0 as f64 / 2.,
                  (player.pos.1 - my_pos.1) * zoom + size.1 as f64 / 2.),
                 player.show_size * zoom,
-                (255, 0, 255)
+                player.color
             );
         }
     }
