@@ -21,6 +21,7 @@ pub mod ext;
 
 use std::sync::Mutex;
 use std::cmp::Ordering;
+use std::time::{Instant, Duration};
 
 use agar_backend::{State, IdPlayerCommand, PlayerCommand};
 use ext::*;
@@ -34,7 +35,7 @@ lazy_static! {
     static ref STATE: Mutex<(State, usize)> = Mutex::new((State::new(), 0)); // State, client_id
     static ref ZOOM: Mutex<(f64, f64)> = Mutex::new((1., 1.)); // (wanted, current)
 
-    //static ref LAST_TICK: Mutex<Option<Instant>> = Mutex::new(None);
+    static ref LAST_TICK: Mutex<Option<Instant>> = Mutex::new(None);
 }
 
 #[wasm_bindgen]
@@ -159,6 +160,38 @@ fn draw() {
                 (200, 200, 200)
             );
         }
+
+
+        // Draw west wall
+        put_line(
+            (-(my_pos.0 * zoom) + size.0 as f64 / 2., 0.),
+            (-(my_pos.0 * zoom) + size.0 as f64 / 2., size.1 as f64),
+            2.,
+            (100, 100, 100)
+        );
+        // Draw east wall
+        put_line(
+            (-((my_pos.0 - state.0.size.0) * zoom) + size.0 as f64 / 2., 0.),
+            (-((my_pos.0 - state.0.size.0) * zoom) + size.0 as f64 / 2., size.1 as f64),
+            2.,
+            (100, 100, 100)
+        );
+
+        // Draw north wall
+        put_line(
+            (           0., -(my_pos.1 * zoom) + size.1 as f64 / 2.),
+            (size.0 as f64, -(my_pos.1 * zoom) + size.1 as f64 / 2.),
+            2.,
+            (100, 100, 100)
+        );
+        // Draw east wall
+        put_line(
+            (           0., -((my_pos.1 - state.0.size.1) * zoom) + size.1 as f64 / 2.),
+            (size.0 as f64, -((my_pos.1 - state.0.size.1) * zoom) + size.1 as f64 / 2.),
+            2.,
+            (100, 100, 100)
+        );
+
 
         for ball in &state.0.balls {
             put_circle(
