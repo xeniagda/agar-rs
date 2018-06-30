@@ -51,7 +51,13 @@ agar.then(module => {
             module.scroll(event.deltaY);
         });
 
-        setInterval(module.tick, 1000 / 60);
+        function ticker() {
+            let d = new Date();
+            module.tick(d.getTime() / 1000);
+            requestAnimationFrame(ticker);
+        }
+        requestAnimationFrame(ticker);
+
         setInterval(module.redraw, 1000 * 10);
         setInterval(() => {
             if (get_size()[0] !== width || get_size()[1] !== height) {

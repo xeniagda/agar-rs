@@ -1,4 +1,4 @@
-#![feature(proc_macro, wasm_custom_section, wasm_import_module)]
+#![feature(proc_macro, wasm_custom_section, wasm_import_module, nll)]
 
 
 #[macro_use]
@@ -21,7 +21,6 @@ pub mod ext;
 
 use std::sync::Mutex;
 use std::cmp::Ordering;
-use std::time::{Instant, Duration};
 
 use agar_backend::{State, IdPlayerCommand, PlayerCommand};
 use ext::*;
@@ -35,7 +34,7 @@ lazy_static! {
     static ref STATE: Mutex<(State, usize)> = Mutex::new((State::new(), 0)); // State, client_id
     static ref ZOOM: Mutex<(f64, f64)> = Mutex::new((1., 1.)); // (wanted, current)
 
-    static ref LAST_TICK: Mutex<Option<Instant>> = Mutex::new(None);
+    static ref LAST_TICK: Mutex<Option<f64>> = Mutex::new(None);
 }
 
 #[wasm_bindgen]
@@ -48,8 +47,24 @@ pub fn start(width: usize, height: usize) {
 }
 
 #[wasm_bindgen]
-pub fn tick() {
-    let dt = 1. / 60.;
+pub fn tick(now: f64) {
+
+    let dt =
+        if let Ok(mut last_tick) = LAST_TICK.lock() {
+            match *last_tick {
+                Some(ref mut last) => {
+                    let dt = now - *last;
+                    *last = now;
+                    dt
+                }
+                None => {
+                    *last_tick = Some(now);
+                    return;
+                }
+            }
+        } else {
+            1. / 60.
+        };
 
     draw();
     if let Ok(mut state) = STATE.lock() {
