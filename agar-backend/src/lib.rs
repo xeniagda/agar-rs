@@ -14,7 +14,7 @@ use std::collections::{HashMap, HashSet};
 use std::mem;
 
 #[cfg(feature = "server-side")]
-const BALL_PROB_PER_SEC: f64 = 0.3;
+const BALL_PROB_PER_SEC: f64 = 0.4;
 
 const GROW_SPEED: f64 = 4.;
 const SIZE_RATIO_TO_EAT: f64 = 1.2;
@@ -24,6 +24,9 @@ pub struct State {
     pub players: HashMap<usize, Player>,
     pub size: (f64, f64),
     pub balls: Vec<Ball>,
+    // Every time x is eaten by y, (x: y) is added. This is used by the clients to
+    // keep track of whom to follow with the camera
+    pub eaten_by: HashMap<usize, usize>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -65,7 +68,8 @@ impl State {
         State {
             players: HashMap::new(),
             balls: vec![],
-            size: (300., 300.),
+            size: (1000., 1000.),
+            eaten_by: HashMap::new(),
         }
     }
 
@@ -162,6 +166,8 @@ impl State {
                     let dist = (dx * dx + dy * dy).sqrt();
                     if dist < player.size - other.size {
                         eaten_ids.insert(*oid);
+
+                        self.eaten_by.insert(*oid, *id);
 
                         let old_size = size_adds.get(id).unwrap_or(&0.).clone();
 

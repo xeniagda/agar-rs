@@ -147,8 +147,15 @@ fn draw() {
 
 
     if let Ok(state) = STATE.lock() {
-        let my_pos = state.0.players.get(&state.1).map(|x| x.pos).unwrap_or((0., 0.));
-        let my_size = state.0.players.get(&state.1).map(|x| x.show_size).unwrap_or(10.);
+        let mut me_id = state.1;
+        let mut is_me = true;
+        while let Some(id) = state.0.eaten_by.get(&me_id) {
+            me_id = *id;
+            is_me = false;
+        }
+
+        let my_pos = state.0.players.get(&me_id).map(|x| x.pos).unwrap_or((0., 0.));
+        let my_size = state.0.players.get(&me_id).map(|x| x.show_size).unwrap_or(10.);
 
         let zoom = 0.015 * zoom_mul / (my_size.sqrt() + 2.) * (size.0 + size.1) as f64;
 
