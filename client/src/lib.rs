@@ -125,7 +125,7 @@ pub fn scroll(y: f64) {
 }
 
 #[wasm_bindgen]
-pub fn recv_ws_message(data: Vec<u8>) {
+pub fn recv_ws(data: Vec<u8>) {
     if let Ok(mut state) = STATE.lock() {
         match serde_impl::from_slice::<(State, usize)>(&data) {
             Ok(new_state) => { *state = new_state }
