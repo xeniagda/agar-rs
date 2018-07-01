@@ -13,7 +13,12 @@ export function put_char_3(x, y, ch, fr, fg, fb) {
     ctx.fillText(String.fromCharCode(ch), x, y);
 }
 
-export function put_circle_3(x, y, r, fr, fg, fb) {
+export function put_bg_3(fr, fg, fb) {
+    ctx.fillStyle = `rgb(${fr & 255},${fg & 255},${fb & 255})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+export function put_circle_3(x, y, r, fr, fg, fb, or, og, ob) {
     if (x + r < 0 ||
         y + r < 0 ||
         x - r > get_size()[0] ||
@@ -23,7 +28,7 @@ export function put_circle_3(x, y, r, fr, fg, fb) {
     }
 
     ctx.fillStyle = `rgb(${fr & 255},${fg & 255},${fb & 255})`;
-    ctx.strokeStyle = `rgb(0, 0, 0)`;
+    ctx.strokeStyle = `rgb(${or & 255},${og & 255},${ob & 255})`;
     ctx.beginPath();
     ctx.arc(x, y, r, 0, 2 * Math.PI);
     ctx.closePath();

@@ -154,6 +154,12 @@ fn draw() {
             is_me = false;
         }
 
+        if is_me {
+            put_bg((255, 255, 255));
+        } else {
+            put_bg((25, 25, 25));
+        }
+
         let my_pos = state.0.players.get(&me_id).map(|x| x.pos).unwrap_or((0., 0.));
         let my_size = state.0.players.get(&me_id).map(|x| x.show_size).unwrap_or(10.);
 
@@ -168,7 +174,8 @@ fn draw() {
                 (x * zoom * LINE_SPACE - x_scroll * zoom + size.0 as f64 / 2., 0.),
                 (x * zoom * LINE_SPACE - x_scroll * zoom + size.0 as f64 / 2., size.1 as f64),
                 1.,
-                (200, 200, 200)
+                if is_me { (200, 200, 200) }
+                    else { (100, 100, 100) }
             );
         }
         let y_scroll = (my_pos.1 / LINE_SPACE - ((my_pos.1 / LINE_SPACE) as i64) as f64) * LINE_SPACE;
@@ -179,7 +186,8 @@ fn draw() {
                 (           0., y * zoom * LINE_SPACE - y_scroll * zoom + size.1 as f64 / 2.),
                 (size.0 as f64, y * zoom * LINE_SPACE - y_scroll * zoom + size.1 as f64 / 2.),
                 1.,
-                (200, 200, 200)
+                if is_me { (200, 200, 200) }
+                    else { (100, 100, 100) }
             );
         }
 
@@ -189,14 +197,16 @@ fn draw() {
             (-(my_pos.0 * zoom) + size.0 as f64 / 2., 0.),
             (-(my_pos.0 * zoom) + size.0 as f64 / 2., size.1 as f64),
             2.,
-            (100, 100, 100)
+            if is_me { (100, 100, 100) }
+                else { (200, 200, 200) }
         );
         // Draw east wall
         put_line(
             (-((my_pos.0 - state.0.size.0) * zoom) + size.0 as f64 / 2., 0.),
             (-((my_pos.0 - state.0.size.0) * zoom) + size.0 as f64 / 2., size.1 as f64),
             2.,
-            (100, 100, 100)
+            if is_me { (100, 100, 100) }
+                else { (200, 200, 200) }
         );
 
         // Draw north wall
@@ -204,14 +214,16 @@ fn draw() {
             (           0., -(my_pos.1 * zoom) + size.1 as f64 / 2.),
             (size.0 as f64, -(my_pos.1 * zoom) + size.1 as f64 / 2.),
             2.,
-            (100, 100, 100)
+            if is_me { (100, 100, 100) }
+                else { (200, 200, 200) }
         );
         // Draw east wall
         put_line(
             (           0., -((my_pos.1 - state.0.size.1) * zoom) + size.1 as f64 / 2.),
             (size.0 as f64, -((my_pos.1 - state.0.size.1) * zoom) + size.1 as f64 / 2.),
             2.,
-            (100, 100, 100)
+            if is_me { (100, 100, 100) }
+                else { (200, 200, 200) }
         );
 
 
@@ -220,7 +232,9 @@ fn draw() {
                 ((ball.pos.0 - my_pos.0) * zoom + size.0 as f64 / 2.,
                  (ball.pos.1 - my_pos.1) * zoom + size.1 as f64 / 2.),
                 zoom,
-                ball.color
+                ball.color,
+                if is_me { (0, 0, 0) }
+                    else { (255, 255, 255) }
             );
         }
 
@@ -231,7 +245,9 @@ fn draw() {
                 ((player.pos.0 - my_pos.0) * zoom + size.0 as f64 / 2.,
                  (player.pos.1 - my_pos.1) * zoom + size.1 as f64 / 2.),
                 player.show_size * zoom,
-                player.color
+                player.color,
+                if is_me { (0, 0, 0) }
+                    else { (255, 255, 255) }
             );
         }
     }
