@@ -7,7 +7,7 @@ pub extern {
     pub fn put_bg_3(fr: u8, fg: u8, fb: u8);
     pub fn put_line_3(x1: f64, y1: f64, x2: f64, y2: f64, r: f64, fr: u8, fg: u8, fb: u8);
     pub fn clear();
-    pub fn log(text: &str);
+    pub fn log(text: String);
     pub fn rand() -> f64;
     pub fn atan2(y: f64, x: f64) -> f64;
     pub fn ws_send(msg: Vec<u8>);

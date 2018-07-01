@@ -129,7 +129,7 @@ pub fn recv_ws(data: Vec<u8>) {
     if let Ok(mut state) = STATE.lock() {
         match serde_impl::from_slice::<(State, usize)>(&data) {
             Ok(new_state) => { *state = new_state }
-            Err(e) => { log(&format!("Decoding error: {:?}", e)) }
+            Err(e) => { log(format!("Decoding error: {:?}", e)) }
         }
     }
 }
