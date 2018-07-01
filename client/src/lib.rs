@@ -28,11 +28,13 @@ use itertools::Itertools;
 
 const LINE_SPACE: f64 = 5.;
 const ZOOM_SPEED: f64 = 20.;
+const SIZE_SPEED: f64 = 20.;
+const POS_SPEED: f64 = 10.;
 
 lazy_static! {
     static ref SIZE: Mutex<(usize, usize)> = Mutex::new((0, 0));
     static ref STATE: Mutex<(State, usize)> = Mutex::new((State::new(), 0)); // State, client_id
-    static ref ZOOM: Mutex<(f64, f64)> = Mutex::new((1., 1.)); // (wanted, current)
+    static ref ZOOM: Mutex<(f64, f64, Option<(f64, f64)>, f64)> = Mutex::new((0.8, 3., None, 3.)); // (wanted, current, player position, player size)
 
     static ref LAST_TICK: Mutex<Option<f64>> = Mutex::new(None);
 }
@@ -67,12 +69,31 @@ pub fn tick(now: f64) {
         };
 
     draw();
+    let mut me: Option<(Option<(f64, f64)>, f64)> = None;
     if let Ok(mut state) = STATE.lock() {
         state.0.tick(dt);
+        let mut me_id = state.1;
+        while let Some(id) = state.0.eaten_by.get(&me_id) {
+            me_id = *id;
+        }
+
+        me = Some(state.0.players.get(&me_id).map(|x| (Some(x.pos), x.size)).unwrap_or((None, 10.)));
     }
 
     if let Ok(mut zoom) = ZOOM.lock() {
         zoom.1 = (zoom.1 - zoom.0) * (1. / ZOOM_SPEED).powf(dt) + zoom.0;
+
+        if let Some((pos, size)) = me {
+            zoom.3 = (zoom.3 - size) * (1. / SIZE_SPEED).powf(dt) + size;
+            if let Some((ref mut zx, ref mut zy)) = zoom.2 {
+                if let Some((x, y)) = pos {
+                    *zx = (*zx - x) * (1. / POS_SPEED).powf(dt) + x;
+                    *zy = (*zy - y) * (1. / POS_SPEED).powf(dt) + y;
+                }
+            } else {
+                zoom.2 = pos;
+            }
+        }
     }
 }
 
@@ -143,7 +164,8 @@ fn draw() {
 
     let zoom_mul = ZOOM.lock();
     if zoom_mul.is_err() { return; }
-    let zoom_mul = zoom_mul.unwrap().1;
+    let (_, zoom_mul, my_pos, my_size) = *zoom_mul.unwrap();
+
 
 
     if let Ok(state) = STATE.lock() {
@@ -160,10 +182,11 @@ fn draw() {
             put_bg((25, 25, 25));
         }
 
-        let my_pos = state.0.players.get(&me_id).map(|x| x.pos).unwrap_or((0., 0.));
-        let my_size = state.0.players.get(&me_id).map(|x| x.show_size).unwrap_or(10.);
+        let real_pos = state.0.players.get(&me_id).map(|x| x.pos).unwrap_or((0., 0.));
+        let my_pos = my_pos.unwrap_or(real_pos);
 
-        let zoom = 0.015 * zoom_mul / (my_size.sqrt() + 2.) * (size.0 + size.1) as f64;
+
+        let zoom = 0.010 * zoom_mul / (my_size.sqrt() + 2.) * (size.0 + size.1) as f64;
 
         // Grid lines
         let x_scroll = (my_pos.0 / LINE_SPACE - ((my_pos.0 / LINE_SPACE) as i64) as f64) * LINE_SPACE;
