@@ -40,7 +40,7 @@ lazy_static! {
 fn main() {
     let mut args = args();
 
-    let mut addr: SocketAddr = ([127, 0, 0, 1], 8080).into();
+    let mut addr: SocketAddr = ([127, 0, 0, 1], 6969).into();
     if let Some(arg) = args.nth(1) {
         if let Ok(x) = arg.parse::<SocketAddr>() {
             addr = x;
