@@ -4,8 +4,8 @@ version = "0.1.0"
 authors = ["loovjo <jonathan.loov@gmail.com>"]
 
 [dependencies]
-tokio-tungstenite = "0.5"
-tungstenite = "0.5"
+tokio-tungstenite = { git = "https://github.com/snapview/tokio-tungstenite.git" }
+tungstenite = "0.5.1"
 tokio = "0.1"
 futures = "0.1"
 
